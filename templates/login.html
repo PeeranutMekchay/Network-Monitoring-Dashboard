@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}เข้าสู่ระบบ{% endblock %}
+{% block content %}
+<div class="row justify-content-center mt-5">
+  <div class="col-sm-8 col-md-5 col-lg-4">
+    <div class="card shadow-sm">
+      <div class="card-body p-4">
+        <h1 class="h4 mb-1 text-center"><i class="bi bi-hdd-network"></i> Network Monitor</h1>
+        <p class="text-muted text-center small mb-4">เข้าสู่ระบบสำหรับผู้ดูแล</p>
+        <form method="post">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <div class="mb-3">
+            <label class="form-label" for="username">ชื่อผู้ใช้</label>
+            <input class="form-control" id="username" name="username" required autofocus autocomplete="username">
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="password">รหัสผ่าน</label>
+            <input class="form-control" id="password" name="password" type="password" required autocomplete="current-password">
+          </div>
+          <button class="btn btn-primary w-100">เข้าสู่ระบบ</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

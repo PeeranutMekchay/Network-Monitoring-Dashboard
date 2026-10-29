@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}สแกน Subnet{% endblock %}
+{% block content %}
+<h1 class="h3">สแกนหาอุปกรณ์ใน Subnet</h1>
+<p class="text-muted">ระบบจะ Ping ทุก IP ใน Subnet และลองเชื่อมต่อ Port {{ '80, 443, 22, 445, 3389' }} สำหรับอุปกรณ์ที่บล็อก ICMP (สูงสุด /22 หรือ 1,024 hosts)</p>
+<form method="post" class="row g-2 mb-4" id="scan-form">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+  <div class="col-sm-6 col-md-4">
+    <input class="form-control font-monospace" name="cidr" value="{{ cidr }}" placeholder="192.168.1.0/24" required>
+  </div>
+  <div class="col-auto">
+    <button class="btn btn-primary" id="scan-btn"><i class="bi bi-radar"></i> เริ่มสแกน</button>
+  </div>
+</form>
+
+{% if results is not none %}
+  {% if results %}
+  <form method="post" action="{{ url_for('scan_add') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span>พบ {{ results|length }} อุปกรณ์ใน {{ cidr }}</span>
+        <button class="btn btn-sm btn-success"><i class="bi bi-plus-lg"></i> เพิ่มที่เลือก</button>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead><tr><th><input type="checkbox" class="form-check-input" id="select-all"></th><th>IP</th><th>Hostname</th><th>Latency</th><th>ชื่อที่จะบันทึก</th></tr></thead>
+          <tbody>
+          {% for r in results %}
+            <tr class="{{ 'table-secondary' if r.known else '' }}">
+              <td>
+                {% if r.known %}<span class="badge bg-secondary">มีแล้ว</span>
+                {% else %}<input type="checkbox" class="form-check-input scan-check" name="ip" value="{{ r.ip }}">{% endif %}
+              </td>
+              <td class="font-monospace">{{ r.ip }}</td>
+              <td>{{ r.hostname or '-' }}</td>
+              <td>{{ '%.1f ms'|format(r.latency_ms) }}{% if r.open_ports %} <small class="text-muted">(port {{ r.open_ports|join(',') }})</small>{% endif %}</td>
+              <td>
+                <input class="form-control form-control-sm" name="name_{{ r.ip }}" value="{{ r.hostname or r.ip }}" {{ 'disabled' if r.known }}>
+                <input type="hidden" name="ports_{{ r.ip }}" value="{{ r.open_ports|join(',') }}">
+              </td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </form>
+  {% else %}
+    <div class="alert alert-secondary">ไม่พบอุปกรณ์ที่ตอบสนองใน {{ cidr }}</div>
+  {% endif %}
+{% endif %}
+{% endblock %}
+{% block scripts %}
+<script>
+  document.getElementById('scan-form').addEventListener('submit', () => {
+    const btn = document.getElementById('scan-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> กำลังสแกน...';
+  });
+  const all = document.getElementById('select-all');
+  if (all) all.addEventListener('change', () =>
+    document.querySelectorAll('.scan-check').forEach(c => { c.checked = all.checked; }));
+</script>
+{% endblock %}

@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+  <div>
+    <h1 class="h3 mb-0">Dashboard</h1>
+    <small class="text-muted">ตรวจสอบอัตโนมัติทุก {{ check_interval }} วินาที · อัปเดตล่าสุด <span id="last-refresh">-</span></small>
+  </div>
+  <form method="post" action="{{ url_for('check_all') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <button class="btn btn-primary"><i class="bi bi-arrow-repeat"></i> ตรวจสอบทั้งหมดตอนนี้</button>
+  </form>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3"><div class="card stat-card"><div class="card-body">
+    <div class="text-muted small">อุปกรณ์ทั้งหมด</div><div class="stat-value" id="stat-total">{{ devices|length }}</div>
+  </div></div></div>
+  <div class="col-6 col-md-3"><div class="card stat-card border-success"><div class="card-body">
+    <div class="text-muted small">🟢 Online</div><div class="stat-value text-success" id="stat-online">{{ devices|selectattr('status', 'equalto', 'online')|list|length }}</div>
+  </div></div></div>
+  <div class="col-6 col-md-3"><div class="card stat-card border-danger"><div class="card-body">
+    <div class="text-muted small">🔴 Offline</div><div class="stat-value text-danger" id="stat-offline">{{ devices|selectattr('status', 'equalto', 'offline')|list|length }}</div>
+  </div></div></div>
+  <div class="col-6 col-md-3"><div class="card stat-card border-secondary"><div class="card-body">
+    <div class="text-muted small">⚪ ยังไม่ได้ตรวจ</div><div class="stat-value text-secondary" id="stat-unknown">{{ devices|selectattr('status', 'equalto', 'unknown')|list|length }}</div>
+  </div></div></div>
+</div>
+
+{% if not devices %}
+  <div class="text-center text-muted py-5">
+    <i class="bi bi-router display-4"></i>
+    <p class="mt-3">ยังไม่มีอุปกรณ์ · <a href="{{ url_for('devices') }}">เพิ่มอุปกรณ์</a> หรือ <a href="{{ url_for('scan') }}">สแกน Subnet</a></p>
+  </div>
+{% else %}
+<div class="mb-3">
+  <input class="form-control" id="filter" placeholder="ค้นหาชื่อ, IP, ประเภท, สถานที่...">
+</div>
+<div class="row g-3" id="device-grid">
+  {% for d in devices %}
+  <div class="col-sm-6 col-lg-4 col-xxl-3 device-col" data-id="{{ d.id }}">
+    <a class="card device-card status-{{ d.status }} text-decoration-none text-body h-100" href="{{ url_for('device_detail', device_id=d.id) }}">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start">
+          <div class="text-truncate">
+            <h2 class="h6 mb-0 text-truncate">{{ d.name }}</h2>
+            <small class="text-muted font-monospace text-break">{{ d.host }}</small>
+          </div>
+          <span class="badge status-badge">{{ d.status|upper }}</span>
+        </div>
+        <div class="d-flex justify-content-between mt-3 small">
+          <span><i class="bi bi-tag"></i> {{ d.device_type }}</span>
+          <span><i class="bi bi-geo-alt"></i> {{ d.location or '-' }}</span>
+        </div>
+        <div class="d-flex justify-content-between mt-2">
+          <span class="latency fw-semibold">{{ '%.1f ms'|format(d.latency_ms) if d.latency_ms is not none else '-' }}</span>
+          <span class="http small text-muted">{{ 'HTTP %d'|format(d.http_status) if d.http_status else '' }}</span>
+        </div>
+        <div class="ports mt-2">
+          {% for p in d.ports.split(',') if p %}
+            <span class="badge port-badge {{ 'bg-success' if p in d.open_ports.split(',') else 'bg-secondary' }}">{{ p }}{% if common_ports.get(p|int) %} {{ common_ports[p|int] }}{% endif %}</span>
+          {% endfor %}
+        </div>
+        <div class="checked-at small text-muted mt-2">{{ d.checked_at or 'ยังไม่ได้ตรวจ' }}</div>
+      </div>
+    </a>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+{% endblock %}
+{% block scripts %}
+<script>window.DASHBOARD_REFRESH_MS = 15000;</script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}

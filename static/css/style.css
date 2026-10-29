@@ -1,0 +1,27 @@
+:root {
+  --status-online: #198754;
+  --status-offline: #dc3545;
+  --status-unknown: #6c757d;
+}
+
+body { background: #f4f6f9; }
+
+.stat-card { border-left-width: 4px; }
+.stat-value { font-size: 1.8rem; font-weight: 600; line-height: 1.2; }
+
+.device-card { border-left: 5px solid var(--status-unknown); transition: transform .1s, box-shadow .1s; }
+.device-card:hover { transform: translateY(-2px); box-shadow: 0 .4rem 1rem rgba(0,0,0,.08); }
+.device-card.status-online { border-left-color: var(--status-online); }
+.device-card.status-offline { border-left-color: var(--status-offline); background: #fff5f5; }
+
+.status-badge, .status-badge-unknown { background: var(--status-unknown); }
+.status-online .status-badge, .status-badge-online { background: var(--status-online); }
+.status-offline .status-badge, .status-badge-offline { background: var(--status-offline); }
+.status-offline .status-badge { animation: pulse 1.5s infinite; }
+
+.port-badge { font-weight: 500; margin-right: .2rem; }
+.port-chip.active { background: #0d6efd; color: #fff; border-color: #0d6efd; }
+
+.chart-box { position: relative; height: 300px; }
+
+@keyframes pulse { 50% { opacity: .55; } }

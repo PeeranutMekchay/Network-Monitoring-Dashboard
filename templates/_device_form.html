@@ -1,0 +1,33 @@
+<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+<div class="row g-2">
+  <div class="col-md-6">
+    <label class="form-label" for="name">ชื่ออุปกรณ์</label>
+    <input class="form-control" id="name" name="name" required maxlength="100" value="{{ form.name or '' }}" placeholder="Core Router">
+  </div>
+  <div class="col-md-6">
+    <label class="form-label" for="host">IP / Hostname / URL</label>
+    <input class="form-control font-monospace" id="host" name="host" required value="{{ form.host or '' }}" placeholder="192.168.1.1 หรือ https://example.com">
+  </div>
+  <div class="col-md-6">
+    <label class="form-label" for="device_type">ประเภท</label>
+    <select class="form-select" id="device_type" name="device_type">
+      {% for t in device_types %}
+        <option {% if (form.device_type or 'Server') == t %}selected{% endif %}>{{ t }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-md-6">
+    <label class="form-label" for="location">สถานที่</label>
+    <input class="form-control" id="location" name="location" maxlength="100" value="{{ form.location or '' }}" placeholder="ห้อง Server ชั้น 2">
+  </div>
+  <div class="col-12">
+    <label class="form-label" for="ports">Port ที่ต้องการตรวจ</label>
+    <input class="form-control font-monospace" id="ports" name="ports" value="{{ form.ports or '' }}" placeholder="22,80,443,3389">
+    <div class="mt-1 d-flex flex-wrap gap-1">
+      {% for port, label in common_ports.items() %}
+        <button type="button" class="btn btn-sm btn-outline-secondary port-chip" data-port="{{ port }}">{{ port }} {{ label }}</button>
+      {% endfor %}
+    </div>
+    <div class="form-text">ถ้าอุปกรณ์บล็อก ICMP (Ping) ระบบจะถือว่า Online เมื่อมี Port ใด Port หนึ่งเปิดอยู่ · ประเภท Website จะตรวจ HTTP Status Code</div>
+  </div>
+</div>

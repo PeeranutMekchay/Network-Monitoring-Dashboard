@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}แก้ไข {{ device.name }}{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-7">
+    <nav class="mb-2"><a href="{{ url_for('device_detail', device_id=device.id) }}"><i class="bi bi-arrow-left"></i> กลับ</a></nav>
+    <div class="card">
+      <div class="card-header"><i class="bi bi-pencil"></i> แก้ไขอุปกรณ์</div>
+      <div class="card-body">
+        <form method="post">
+          {% include "_device_form.html" %}
+          <div class="d-flex gap-2 mt-3">
+            <button class="btn btn-primary"><i class="bi bi-save"></i> บันทึก</button>
+            <a class="btn btn-outline-secondary" href="{{ url_for('device_detail', device_id=device.id) }}">ยกเลิก</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/device_form.js') }}"></script>{% endblock %}
